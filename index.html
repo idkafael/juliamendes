@@ -3,271 +3,247 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acesso Exclusivo</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #000;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Conteúdo Exclusivo</title>
 
-        /* --- SETA NO TOPO DIREITO --- */
-        .top-arrow {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1000;
-            animation: bounce 1s infinite;
-        }
-        .top-arrow span { font-size: 50px; filter: drop-shadow(0 0 10px #ff3b3b); display: block; }
-        .top-arrow p { font-size: 0.7rem; font-weight: 900; color: #ff3b3b; margin-top: -5px; }
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
+body {
+    height: 100dvh;
+    width: 100vw;
+    overflow: hidden;
+    font-family: system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at top, #0b132b, #000);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
 
-        .container {
-            width: 100%;
-            max-width: 420px;
-            padding: 20px;
-            text-align: center;
-        }
+/* CARD PRINCIPAL */
+.wrapper {
+    position: relative;
+    width: 90%;
+    max-width: 360px;
+    aspect-ratio: 3 / 4;
+    border-radius: 26px;
+    overflow: hidden;
+    background: #000; /* Fundo base preto */
+    box-shadow: 0 0 40px rgba(255, 122, 223, 0.15);
+}
 
-        .main-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 30px;
-            padding: 25px;
-            backdrop-filter: blur(15px);
-        }
+/* CONTEÚDO QUE APARECE DEPOIS */
+.hidden-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(180deg, #0b132b, #000);
+    z-index: 1;
+}
 
-        /* --- BARRA DE PROGRESSO --- */
-        .loader-container { margin-bottom: 25px; }
-        .loader-text {
-            font-size: 0.8rem;
-            color: #ff3b3b;
-            font-weight: 700;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .progress-bar {
-            width: 100%;
-            height: 10px;
-            background: #111;
-            border-radius: 10px;
-            border: 1px solid #333;
-            overflow: hidden;
-        }
-        .progress-fill {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(to right, #ff3b3b, #ff0000);
-            box-shadow: 0 0 15px rgba(255, 59, 59, 0.5);
-            transition: width 5s linear;
-        }
+.hidden-content h1 {
+    font-size: 2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #fff, #ffd6f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
 
-        h1 { font-size: 1.4rem; margin-bottom: 20px; font-weight: 900; }
+.hidden-content p {
+    font-size: 1rem;
+    opacity: 0.8;
+}
 
-        /* --- TUTORIAL EM TEXTO --- */
-        .text-steps {
-            text-align: left;
-            margin-bottom: 20px;
-        }
-        .step {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 12px;
-            border-radius: 12px;
-            margin-bottom: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .step-n {
-            background: #ff3b3b;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 900;
-            flex-shrink: 0;
-        }
-        .step-txt { font-size: 0.85rem; line-height: 1.3; color: #ddd; }
-        .step-txt b { color: #ff3b3b; }
+/* CANVAS (A CAMADA QUE SERÁ RASPADA) */
+#scratchCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10; /* Fica no topo de tudo */
+    touch-action: none;
+    cursor: crosshair;
+}
 
-        .gif-box {
-            width: 100%;
-            border-radius: 15px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            border: 2px solid #222;
-        }
-        .gif-box img { width: 100%; display: block; }
+/* TEXTO SOBRE A RASPADINHA (ORIENTAÇÃO) */
+.overlay-instruction {
+    position: absolute;
+    inset: 0;
+    z-index: 11; /* Acima do canvas, mas sem bloquear toque */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none; /* Permite que o toque passe para o canvas abaixo */
+    transition: opacity 0.5s ease;
+}
 
-        /* Botão Temporizado */
-        .btn-check {
-            display: none;
-            width: 100%;
-            background: #fff;
-            color: #000;
-            border: none;
-            padding: 18px;
-            border-radius: 15px;
-            font-weight: 900;
-            font-size: 1rem;
-            cursor: pointer;
-            text-transform: uppercase;
-            animation: slideUp 0.4s ease-out;
-        }
+.overlay-instruction span { font-size: 3.5rem; margin-bottom: 10px; }
+.overlay-instruction strong { 
+    font-size: 1.1rem; 
+    letter-spacing: 2px; 
+    text-transform: uppercase; 
+    color: #fff;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
 
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* MODAL */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.98);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            z-index: 2000;
-        }
-        .modal-card {
-            background: #111;
-            padding: 30px 20px;
-            border-radius: 25px;
-            border: 1px solid #333;
-            text-align: center;
-            width: 100%;
-            max-width: 360px;
-        }
-        .alert-msg {
-            background: rgba(255, 59, 59, 0.1);
-            border: 1px dashed #ff3b3b;
-            color: #ff3b3b;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            margin: 20px 0;
-            text-align: left;
-        }
-        .btn-final {
-            display: block;
-            background: #ff3b3b;
-            color: #fff;
-            text-decoration: none;
-            padding: 18px;
-            border-radius: 12px;
-            font-weight: 900;
-        }
-    </style>
+.hint {
+    position: absolute;
+    bottom: 25px;
+    width: 100%;
+    text-align: center;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.6;
+    z-index: 12;
+    pointer-events: none;
+}
+</style>
 </head>
-<body onload="initLoader()">
 
-<div class="top-arrow"><span>↗️</span><p>Clique aqui</p></div>
+<body>
 
-<div class="container">
-    <div class="main-card">
-        
-        <div class="loader-container">
-            <div class="loader-text" id="status">Validando seu acesso...</div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="bar"></div>
-            </div>
-        </div>
-
-        <h1>SIGA ESTES PASSOS:</h1>
-
-        <div class="text-steps">
-            <div class="step">
-                <div class="step-n">1</div>
-                <div class="step-txt">Toque nos <b>3 Pontos</b> no topo direito.</div>
-            </div>
-            <div class="step">
-                <div class="step-n">2</div>
-                <div class="step-txt">Clique em <b>"Abrir no Navegador"</b>.</div>
-            </div>
-            <div class="step">
-                <div class="step-n">3</div>
-                <div class="step-txt">Clique no <b>botão branco</b> que aparecerá aqui abaixo do gif.</div>
-            </div>
-        </div>
-
-        <div class="gif-box">
-            <img src="/tutorial.gif" alt="Tutorial GIF" onerror="this.onerror=null; this.src='https://i.imgur.com/kUc695D.gif';">
-        </div>
-
-        <button class="btn-check" id="btnAction" onclick="openConfirm()">JÁ FIZ OS PASSOS ACIMA</button>
+<div class="wrapper">
+    <div class="hidden-content">
+        <h1>CONTEÚDO LIBERADO</h1>
+        <p>Você ganhou acesso exclusivo.</p>
     </div>
-</div>
 
-<div id="modalConfirm" class="modal-overlay">
-    <div class="modal-card">
-        <h2 style="font-size: 1.5rem;">TEM CERTEZA?</h2>
-        <div class="alert-msg">
-            <b>⚠️ OBSERVAÇÃO DE ALERTA:</b><br><br>
-             Para você acessar nosso <b>Grupo Secreto</b> precisa seguir o tutorial
-        </div>
-        <a href="https://phantoms.group/l/juliamendestiktok?shk=o6n1pj1n" id="finalLink" class="btn-final">SIM, ESTOU NO NAVEGADOR</a>
-        <button onclick="document.getElementById('modalConfirm').style.display='none'" style="background:transparent; color:#444; border:none; margin-top:20px; font-weight:700; text-decoration: underline;">Vou abrir agora</button>
+    <canvas id="scratchCanvas"></canvas>
+
+    <div class="overlay-instruction" id="overlayText">
+        <span>🤫</span>
+        <strong>RASPE PARA VER</strong>
     </div>
-</div>
+
+    <div class="hint">Use o dedo para raspar</div>
+</div>	
 
 <script>
-    function initLoader() {
-        const bar = document.getElementById('bar');
-        const status = document.getElementById('status');
-        const btn = document.getElementById('btnAction');
+const canvas = document.getElementById('scratchCanvas');
+const ctx = canvas.getContext('2d');
+const overlayText = document.getElementById('overlayText');
 
-        setTimeout(() => { bar.style.width = '100%'; }, 100);
+let isDrawing = false;
+let unlocked = false;
 
-        setTimeout(() => {
-            status.innerHTML = "VERIFICAÇÃO COMPLETA!";
-            status.style.color = "#00ff88";
-            btn.style.display = 'block';
-        }, 5100); // 5 segundos de espera
+function setupCanvas() {
+    // Pega o tamanho exato do contêiner wrapper
+    const container = canvas.parentElement;
+    canvas.width = container.offsetWidth;
+    canvas.height = container.offsetHeight;
+
+    // Criar a tinta da raspadinha (cinza premium)
+    ctx.globalCompositeOperation = 'source-over';
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, '#888');
+    gradient.addColorStop(0.5, '#555');
+    gradient.addColorStop(1, '#333');
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Configura para "apagar" o que for desenhado
+    ctx.globalCompositeOperation = 'destination-out';
+}
+
+// Inicializa no load e no resize
+window.addEventListener('load', setupCanvas);
+window.addEventListener('resize', setupCanvas);
+
+function getPointerPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+    };
+}
+
+function handleScratch(e) {
+    if (!isDrawing || unlocked) return;
+    
+    // Esconde o texto central assim que começa a raspar
+    overlayText.style.opacity = '0';
+    
+    const { x, y } = getPointerPos(e);
+    
+    ctx.beginPath();
+    ctx.arc(x, y, 35, 0, Math.PI * 2);
+    ctx.fill();
+    
+    checkPercent();
+}
+
+function checkPercent() {
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let cleared = 0;
+    for (let i = 3; i < data.length; i += 64) { // Pula pixels para performance
+        if (data[i] === 0) cleared++;
     }
-
-    function openConfirm() {
-        document.getElementById('modalConfirm').style.display = 'flex';
-        const link = document.getElementById('finalLink');
-        const search = window.location.search;
-        if (search) {
-            const separator = link.href.includes('?') ? '&' : '?';
-            link.href += separator + search.slice(1);
-        }
+    
+    if (cleared / (data.length / 64) > 0.5) {
+        finishReveal();
     }
+}
+
+function getDestUrl() {
+    const destUrl = new URL('https://phantoms.group/l/juliamendestiktok?shk=o6n1pj1n');
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.forEach((value, key) => {
+        destUrl.searchParams.append(key, value);
+    });
+    return destUrl.toString();
+}
+
+function finishReveal() {
+    if (unlocked) return;
+    unlocked = true;
+    canvas.style.transition = 'opacity 1s ease';
+    canvas.style.opacity = '0';
+    
+    setTimeout(() => {
+        window.location.href = getDestUrl();
+    }, 1200);
+}
+
+// Eventos Mouse
+canvas.addEventListener('mousedown', () => isDrawing = true);
+window.addEventListener('mouseup', () => isDrawing = false);
+window.addEventListener('mousemove', handleScratch);
+
+// Eventos Touch (Mobile)
+canvas.addEventListener('touchstart', (e) => {
+    isDrawing = true;
+    handleScratch(e);
+    e.preventDefault();
+}, { passive: false });
+
+window.addEventListener('touchmove', (e) => {
+    handleScratch(e);
+    e.preventDefault();
+}, { passive: false });
+
+window.addEventListener('touchend', () => isDrawing = false);
+
 </script>
 
-
-  <script>
-    
-    // Pass URL parameters
-    const currentParams = new URLSearchParams(window.location.search);
-    const destUrl = new URL('https://phantoms.group/l/juliamendestiktok?shk=o6n1pj1n');
-    currentParams.forEach((value, key) => {
-      destUrl.searchParams.append(key, value);
-    });
-    const finalUrl = destUrl.toString();
-    
-    // URL de destino disponível na variável finalUrl
-    // O usuário deve clicar em um botão/link para redirecionar
-  </script>
 </body>
 </html>
